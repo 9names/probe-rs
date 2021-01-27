@@ -1,0 +1,18 @@
+---
+name: BL6xx Series
+variants:
+  - name: BL602 
+    memory_map:
+      - Ram:
+          range:
+            start: 33587200 
+            end: 33865727 
+          is_boot_memory: false
+      - Nvm:
+          range:
+            start: 587202560
+            end: 591396864 
+          is_boot_memory: true
+    flash_algorithms:
+flash_algorithms:
+core: riscv
