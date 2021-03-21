@@ -13,7 +13,8 @@ variants:
             start: 587202560
             end: 591396864 
           is_boot_memory: true
-    flash_algorithms: bl602-flashloader
+    flash_algorithms: 
+      - bl602-flashloader
 flash_algorithms:
   bl602-flashloader:
     name: bl602-flashloader
@@ -37,4 +38,4 @@ flash_algorithms:
       sectors:
         - size: 4096
           address: 0
-core: riscv
+core: Riscv
