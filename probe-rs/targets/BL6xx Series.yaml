@@ -14,23 +14,23 @@ variants:
             end: 591396864 
           is_boot_memory: true
     flash_algorithms: 
-      - bl602-flashloader
+      - bl602a
 flash_algorithms:
-  bl602-flashloader:
-    name: bl602-flashloader
+  bl602a:
+    name: bl602a
     description: ""
     default: true
-    instructions: HXGGzrcFAT+ThUUQLsS3pf8Dk4Vlli7GtwWfAJOF9QkuyLf1AAGThUXwLsq3JVLYk4V1DC7MtwUyAJOFZSAuzrcFCwGThbUQLtC3BbsAk4W1Ey7StwXrApOFtRYu1LcFAlCThbUuLta3BQABE4YFEDLYhQUu2rcFqwGThRUQLtyNZROGVVAy3pOFFRCuwLcFIf+ThYXzrsK3BQJAk4V1N67EtwUC8JOFdTeuxrcFQAaThQUZrsi3BQUAk4UFfa7Kt1UDAJOFBeKuzINFQQGJzTcWASEDJkaas1W1AigAApYBRfZAJWGCgJcAAADngKASAABBEQbGIsQ3FAEhAyWEnwKVgyUEowFFgpUBRSJEskBBAYKAHXGGzrcGAT+ThkYQNsS3pv8Dk4ZmljbGtwafAJOG9gk2yLf2AAGThkbwNsq3JlLYk4Z2DDbMtwYyAJOGZiA2zrcGCwGThrYQNtC3BrsAk4a2EzbStwbrApOGthY21LcGAlCThrYuNta3BgABE4cGEDrYhQY22rcGqwGThhYQNtyNZhOHVlA63pOGFhC2wLcGIf+ThobztsK3BgJAk4Z2N7bEtwYC8JOGdje2xrcGQAaThgYZtsi3BgUAk4YGfbbKt1YDAJOGBuK2zLcWASGDp0absoYuhyqGKACFRYKXAUX2QCVhgoBBEQbGNxUBIYMlBaMFRYKVAUWyQEEBgoBBEQbGlwAAAOeAoAAAAEERBsaXAAAA54CgAAAADwAwAwGg
-    pc_init: 242
-    pc_uninit: 506
-    pc_program_page: 276
+    instructions: HXGGzrcFAT+ThUUQLsS3pf8Dk4Vlli7GtwWfAJOF9QkuyLf1AAGThUXwLsq3JVLYk4V1DC7MtwUyAJOFZSAuzrcFCwGThbUQLtC3BbsAk4W1Ey7StwXrApOFtRYu1LcFAlCThbUuLta3BQABE4YFEDLYhQUu2rcFqwGThRUQLtyNZROGVVAy3pOFFRCuwLcFIf+ThYXzrsK3BQJAk4V1N67EtwUC8JOFdTeuxrcFQAaThQUZrsi3BQUAk4UFfa7Kt1UDAJOFBeKuzLcVASEDpkWaqoUoAAKWMzWgAPZAJWGCgB1xhs43BQE/EwVFECrEN6X/AxMFZZYqxjcFnwATBfUJKsg39QABEwVF8CrKNyVS2BMFdQwqzDcFMgATBWUgKs43BQsBEwW1ECrQNwW7ABMFtRMq0jcF6wITBbUWKtQ3BQJQEwW1LirWNwUAAZMFBRAu2AUFKto3BasBEwUVECrcDWWTBVVQLt4TBRUQqsA3BSH/EwWF86rCNwUCQBMFdTeqxDcFAvATBXU3qsY3BUAGEwUFGarINwUFABMFBX2qyjdVAwATBQXiqsw3FQEhgyUFmigAgpUzNaAA9kAlYYKAQREGxiLENxQBIQMlhJ8ClYMlBKMBRYKVAUUiRLJAQQGCgB1xhs63BgE/k4ZGEDbEt6b/A5OGZpY2xrcGnwCThvYJNsi39gABk4ZG8DbKtyZS2JOGdgw2zLcGMgCThmYgNs63BgsBk4a2EDbQtwa7AJOGthM20rcG6wKThrYWNtS3BgJQk4a2LjbWtwYAAROHBhA62IUGNtq3BqsBk4YWEDbcjWYTh1ZQOt6ThhYQtsC3BiH/k4aG87bCtwYCQJOGdje2xLcGAvCThnY3tsa3BkAGk4YGGbbItwYFAJOGBn22yrdWAwCThgbitsy3FgEhg6dGm7KGLocqhigAhUWClzM1oAD2QCVhgoABRYKA
+    pc_init: 450
+    pc_uninit: 716
+    pc_program_page: 484
     pc_erase_sector: 0
-    pc_erase_all: ~
-    data_section_offset: 564
+    pc_erase_all: 226
+    data_section_offset: 720
     flash_properties:
       address_range:
         start: 587202560
-        end: 589202560
+        end: 591396864
       page_size: 256
       erased_byte_value: 255
       program_page_timeout: 5
