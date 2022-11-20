@@ -1,0 +1,88 @@
+---
+name: MSP432E4 Series
+manufacturer: ~
+variants:
+  - name: MSP432E401Y
+    part: ~
+    cores:
+      - name: main
+        type: armv7em
+        core_access_options:
+          Arm:
+            ap: 0
+            psel: 0
+            debug_base: ~
+            cti_base: ~
+    memory_map:
+      - Ram:
+          name: ~
+          range:
+            start: 536870912
+            end: 537133056
+          is_boot_memory: false
+          cores:
+            - main
+      - Nvm:
+          name: ~
+          range:
+            start: 0
+            end: 1048576
+          is_boot_memory: true
+          cores:
+            - main
+    flash_algorithms:
+      - msp432e4_mainflash1024kb
+  - name: MSP432E411Y
+    part: ~
+    cores:
+      - name: main
+        type: armv7em
+        core_access_options:
+          Arm:
+            ap: 0
+            psel: 0
+            debug_base: ~
+            cti_base: ~
+    memory_map:
+      - Ram:
+          name: ~
+          range:
+            start: 536870912
+            end: 537133056
+          is_boot_memory: false
+          cores:
+            - main
+      - Nvm:
+          name: ~
+          range:
+            start: 0
+            end: 1048576
+          is_boot_memory: true
+          cores:
+            - main
+    flash_algorithms:
+      - msp432e4_mainflash1024kb
+flash_algorithms:
+  - name: msp432e4_mainflash1024kb
+    description: MSP432E4 1MB Main Flash Memory
+    default: true
+    instructions: QLpwR8C6cEdP6jAAcEcAAHK2O0gBaCHwAwEBYAAgcEcAIHBHN0hA9gMhQWE2SYFggWhJB/zUwGhA9gEhCEIB0QEgAOAAIAixACBwRwEgcEcsSUD2AyJKYQhgK0iAHohgiGiAB/zUyGhA9gEhCEIB0QEgAOAAIAixACBwRwEgcEct6fBNikYBIwxGk0aBBzTRHE9C8gNheWEm4AAhC+sKDP8llEUE2AfrgQbG+ABRBOBAygfrgQjI+ABhSRwgKfDbOGARSckeOWI5askH/NEzsfloQvIBQxlCAdEBIwDgACMCIXlhgDCAPAAsAt0AK9TRA+ATsQAgvejwjQEg++cAAADmD0AA0A9ABABCpAAAAAA=
+    load_address: ~
+    pc_init: 17
+    pc_uninit: 33
+    pc_program_page: 129
+    pc_erase_sector: 81
+    pc_erase_all: 37
+    data_section_offset: 268
+    flash_properties:
+      address_range:
+        start: 0
+        end: 1048576
+      page_size: 16384
+      erased_byte_value: 255
+      program_page_timeout: 600
+      erase_sector_timeout: 3000
+      sectors:
+        - size: 16384
+          address: 0
+    cores: []
