@@ -188,11 +188,19 @@ impl<'probe> CoreInterface for Riscv32<'probe> {
 
         // check that cores have reset
 
-        let readback: Dmstatus = self.interface.read_dm_register()?;
+        let mut readback: Dmstatus = self.interface.read_dm_register()?;
+        log::info!("DM status in reset() 0: {:?}", readback);
+        if readback.allunavail() {
+            log::warn!("DM status in reset() 1: {:?}", readback);
+            while readback.allunavail() {
+                log::warn!("DM status in reset() 2: {:?}", readback);
+                readback = self.interface.read_dm_register()?;
+            }
+        }
 
         if !readback.allhavereset() {
-            log::warn!("Dmstatue: {:?}", readback);
-            return Err(RiscvError::RequestNotAcknowledged.into());
+            log::warn!("DM status in reset() 3: {:?}", readback);
+            log::warn!("allhavereset bit not set - ignoring");
         }
 
         // acknowledge the reset
@@ -252,10 +260,24 @@ impl<'probe> CoreInterface for Riscv32<'probe> {
         }
 
         // check that cores have reset
-        let readback: Dmstatus = self.interface.read_dm_register()?;
+        let mut readback: Dmstatus = self.interface.read_dm_register()?;
+        log::info!("DM status in reset_and_halt() 0: {:?}", readback);
+        if readback.allunavail() {
+            log::info!("DM status in reset_and_halt() 1: {:?}", readback);
+            while readback.allunavail() {
+                log::info!("DM status in reset_and_halt() 2: {:?}", readback);
+                readback = self.interface.read_dm_register()?;
+            }
+        }
 
-        if !(readback.allhavereset() && readback.allhalted()) {
+        if !(readback.allhalted()) {
+            log::info!("DM status in reset_and_halt() 3: {:?}", readback);
             return Err(RiscvError::RequestNotAcknowledged.into());
+        }
+
+        if !readback.allhavereset() {
+            log::info!("DM status in reset_and_halt() 4: {:?}", readback);
+            log::info!("All have reset bit not set - ignoring");
         }
 
         // acknowledge the reset, clear the halt request
