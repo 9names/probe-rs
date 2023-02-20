@@ -38,7 +38,7 @@ anyhow = "1.0.68"
 textwrap = "0.16.0"
 defmt-decoder = { version = "0.3.4", features = ["unstable"] }
 sanitize-filename = "0.4"
-time = { version = "0.3.17", features = ["local-offset"] }
+time = { version = "0.3.19", features = ["local-offset"] }
 
 [build-dependencies]
 probe-rs-cli-util = { workspace = true, default-features = false, features = [
