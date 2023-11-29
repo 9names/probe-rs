@@ -230,7 +230,27 @@ impl ArmDebugSequence for LPC55S69 {
         tracing::info!("Waiting after reset");
         thread::sleep(Duration::from_millis(10));
 
-        wait_for_stop_after_reset(interface)
+        let start = Instant::now();
+
+        let mut timeout = true;
+
+        while start.elapsed() < Duration::from_micros(50_0000) {
+            if let Ok(v) = interface.read_word_32(Dhcsr::ADDRESS) {
+                let dhcsr = Dhcsr(v);
+
+                // Wait until the S_RESET_ST bit is cleared on a read
+                if !dhcsr.s_reset_st() {
+                    timeout = false;
+                    break;
+                }
+            }
+        }
+
+        if timeout {
+            wait_for_stop_after_reset(interface)
+        } else {
+            Ok(())
+        }
     }
 }
 
