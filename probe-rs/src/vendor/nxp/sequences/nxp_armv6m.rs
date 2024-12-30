@@ -19,6 +19,41 @@ impl LPC80x {
     }
 }
 
+
+// copy-paste of set_hw_breakpoint since we dont' have access to core :(
+fn set_hw_breakpoint(interface: &mut dyn ArmMemoryInterface, bp_register_index: usize, addr: u32) -> Result<(), ArmError> {
+    tracing::trace!("Setting breakpoint in lpc804 sequence on address 0x{:08x}", addr);
+    let mut value = BpCompx(0);
+    if addr % 4 < 2 {
+        // match lower halfword
+        value.set_bp_match(0b01);
+    } else {
+        // match higher halfword
+        value.set_bp_match(0b10);
+    }
+    value.set_comp((addr >> 2) & 0x07FF_FFFF);
+    value.set_enable(true);
+
+    let register_addr =
+        BpCompx::get_mmio_address() + (bp_register_index * size_of::<u32>()) as u64;
+        interface.write_word_32(register_addr, value.into())?;
+
+    Ok(())
+}
+
+// copy-paste of clear_hw_breakpoint since we dont' have access to core :(
+fn clear_hw_breakpoint(interface: &mut dyn ArmMemoryInterface, bp_unit_index: usize) -> Result<(), ArmError> {
+    tracing::trace!("Clearing breakpoint in lpc804 sequence ");
+    let register_addr = BpCompx::get_mmio_address() + (bp_unit_index * size_of::<u32>()) as u64;
+
+    let mut value = BpCompx::from(0);
+    value.set_enable(false);
+
+    interface.write_word_32(register_addr, value.into())?;
+
+    Ok(())
+}
+
 fn force_core_halt(interface: &mut dyn ArmMemoryInterface) -> Result<(), ArmError> {
     tracing::trace!("force_core_halt enter");
 
@@ -48,11 +83,6 @@ impl ArmDebugSequence for LPC80x {
         _core_type: crate::CoreType,
         _debug_base: Option<u64>,
     ) -> Result<(), ArmError> {
-        const FPB_BKPT_H: u32 = 0x80000000;
-        const FPB_BKPT_L: u32 = 0x40000000;
-        const FPB_COMP_M: u32 = 0x1FFFFFFC;
-        const FPB_KEY: u32 = 0x00000002;
-        const FPB_ENABLE: u32 = 0x00000001;
         tracing::trace!("reset_catch_set enter");
 
         // Disable Reset Vector Catch in DEMCR
@@ -66,17 +96,7 @@ impl ArmDebugSequence for LPC80x {
         let reset_vector = interface.read_word_32(0x0000_0004)?;
         tracing::info!("Reset Vector is address 0x{:08x}", reset_vector);
 
-        let bp_match = if (reset_vector & 0x02) != 0 {
-            FPB_BKPT_H
-        } else {
-            FPB_BKPT_L
-        };
-
-        // Set BP0 to Reset Vector
-        let bpcompx = bp_match | (reset_vector & FPB_COMP_M) | FPB_ENABLE;
-        interface.write_word_32(BpCompx::get_mmio_address(), bpcompx)?;
-        // Enable FPB
-        interface.write_word_32(BpCtrl::get_mmio_address(), FPB_KEY | FPB_ENABLE)?;
+        set_hw_breakpoint(interface, 0, reset_vector)?;
 
         // Clear the status bits by reading from DHCSR
         let _ = interface.read_word_32(Dhcsr::get_mmio_address())?;
@@ -96,10 +116,8 @@ impl ArmDebugSequence for LPC80x {
         // Disable Reset Vector Catch in DEMCR
         let d = interface.read_word_32(Demcr::get_mmio_address())? & !0x00000001;
         interface.write_word_32(Demcr::get_mmio_address(), d)?;
-        // Clear BP0
-        interface.write_word_32(0xE000_2008, 0x0)?;
-        // Disable FPB
-        interface.write_word_32(0xE000_2000, 0x2)?;
+
+        clear_hw_breakpoint(interface, 0)?;
 
         tracing::debug!("reset_catch_clear exit");
         Ok(())
