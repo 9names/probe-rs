@@ -86,8 +86,9 @@ impl ArmDebugSequence for LPC80x {
         tracing::trace!("reset_catch_set enter");
 
         // Disable Reset Vector Catch in DEMCR
-        let demcr = interface.read_word_32(Demcr::get_mmio_address())?;
-        interface.write_word_32(Demcr::get_mmio_address(), demcr & !0x00000001)?;
+        let mut demcr = Demcr(interface.read_word_32(Demcr::get_mmio_address())?);
+        demcr.set_vc_corereset(false);
+        interface.write_word_32(Demcr::get_mmio_address(), demcr.into())?;
 
         // Map Flash to Vectors
         interface.write_word_32(0x4004_8000, 0x0000_0002)?;
@@ -114,8 +115,9 @@ impl ArmDebugSequence for LPC80x {
         tracing::trace!("reset_catch_clear enter");
 
         // Disable Reset Vector Catch in DEMCR
-        let d = interface.read_word_32(Demcr::get_mmio_address())? & !0x00000001;
-        interface.write_word_32(Demcr::get_mmio_address(), d)?;
+        let mut demcr = Demcr(interface.read_word_32(Demcr::get_mmio_address())?);
+        demcr.set_vc_corereset(false);
+        interface.write_word_32(Demcr::get_mmio_address(), demcr.into())?;
 
         clear_hw_breakpoint(interface, 0)?;
 
