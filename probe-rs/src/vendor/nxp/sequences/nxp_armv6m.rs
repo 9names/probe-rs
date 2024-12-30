@@ -69,6 +69,7 @@ impl LPC80x {
             dhcsr.set_c_halt(true);
             dhcsr.set_c_debugen(true);
             dhcsr.enable_write();
+            assert_eq!( dhcsr.0, 0xA05F0003);
             interface.write_word_32(Dhcsr::get_mmio_address(), dhcsr.into())?;
             let start = Instant::now();
             while start.elapsed() < Duration::from_millis(100) {
@@ -147,6 +148,7 @@ impl ArmDebugSequence for LPC80x {
         let mut aircr = Aircr(0);
         aircr.vectkey();
         aircr.set_sysresetreq(true);
+        assert_eq!(0x05FA0004, aircr.0);
         let _ = interface.write_32(Aircr::get_mmio_address(), &[aircr.0]);
 
         let start = Instant::now();
