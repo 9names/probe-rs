@@ -144,7 +144,10 @@ impl ArmDebugSequence for LPC80x {
         tracing::debug!("reset_system enter");
 
         // Execute VECTRESET via AIRCR, ignore errors.
-        let _ = interface.write_32(Aircr::get_mmio_address(), &[0x05FA0004]);
+        let mut aircr = Aircr(0);
+        aircr.vectkey();
+        aircr.set_sysresetreq(true);
+        let _ = interface.write_32(Aircr::get_mmio_address(), &[aircr.0]);
 
         let start = Instant::now();
         while start.elapsed() < Duration::from_millis(100){
