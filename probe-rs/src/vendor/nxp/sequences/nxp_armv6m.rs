@@ -65,7 +65,11 @@ impl LPC80x {
         }
         // if dhcsr & 0x20000 (s_halt) is still 0 and we hit the above timeout, try halting again.
         if !in_debug_state {
-            interface.write_word_32(Dhcsr::get_mmio_address(), 0xA05F0003)?;
+            let mut dhcsr = Dhcsr(0);
+            dhcsr.set_c_halt(true);
+            dhcsr.set_c_debugen(true);
+            dhcsr.enable_write();
+            interface.write_word_32(Dhcsr::get_mmio_address(), dhcsr.into())?;
             let start = Instant::now();
             while start.elapsed() < Duration::from_millis(100) {
                 if Dhcsr(interface.read_word_32(Dhcsr::get_mmio_address())?).s_halt() {
