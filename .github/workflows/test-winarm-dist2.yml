@@ -1,0 +1,16 @@
+on:
+  workflow_dispatch:
+jobs:
+  dist-winarm:
+    runs-on: windows-11-arm
+    permissions:
+      contents: read
+    steps:
+      - run: git config --global core.longpaths true
+      - uses: actions/checkout@v6
+      - name: Install dist
+        shell: bash
+        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.32.0/cargo-dist-installer.sh | sh
+      - name: Build local artifacts
+        shell: bash
+        run: dist build --artifacts=local --target=aarch64-pc-windows-msvc --output-format=json
