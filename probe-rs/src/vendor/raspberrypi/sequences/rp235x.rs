@@ -4,8 +4,10 @@ use crate::MemoryMappedRegister;
 use crate::architecture::arm::armv6m::Demcr;
 use crate::architecture::arm::dp::{Ctrl, DpAddress, DpRegister};
 use crate::architecture::arm::memory::ArmMemoryInterface;
-use crate::architecture::arm::sequences::{ArmDebugSequence, cortex_m_reset_system};
-use crate::architecture::arm::{ApV2Address, ArmError, FullyQualifiedApAddress};
+use crate::architecture::arm::sequences::{
+    ArmDebugSequence, cortex_m_reset_system, dormant_to_swd_sequence,
+};
+use crate::architecture::arm::{ApV2Address, ArmError, DebugPortWire, FullyQualifiedApAddress};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -69,6 +71,24 @@ impl Rp235x {
 }
 
 impl ArmDebugSequence for Rp235x {
+    fn debug_port_setup(
+        &self,
+        interface: &mut dyn DebugPortWire,
+        dp: DpAddress,
+    ) -> Result<(), ArmError> {
+        tracing::debug!("RP235x: SW-DP dormant wake before connect");
+        const NUM_RETRIES: usize = 5;
+        let mut result = Ok(());
+        for _ in 0..NUM_RETRIES {
+            dormant_to_swd_sequence(interface)?;
+            result = self.debug_port_connect(interface, dp);
+            if result.is_ok() {
+                return Ok(());
+            }
+        }
+        result
+    }
+
     fn reset_system(
         &self,
         core: &mut dyn ArmMemoryInterface,
