@@ -43,11 +43,11 @@ use crate::{
         memory::ArmMemoryInterface,
         sequences::{
             ArmDebugSequence, DebugEraseSequence, DefaultArmSequence, cortex_m_wait_for_reset,
+            dormant_to_swd_sequence,
         },
         traits::DebugPortWire,
     },
     config::MemoryApExt,
-    probe::BitSequence,
     probe::swd::Port,
 };
 
@@ -220,33 +220,7 @@ impl PsocC3X7X8 {
         let mut attempt = 0u32;
         loop {
             attempt += 1;
-            // DORMANT-to-SWD sequence (ARM ADI §B4.3.4):
-            // line reset → JTAG-to-Dormant → 8-cycle preamble → 128-bit alert → SWD activation →
-            // line reset → idle
-            let ok = interface
-                .swj_sequence(&BitSequence::from_u64(51, 0x0007_FFFF_FFFF_FFFF))
-                .is_ok()
-                && interface
-                    .swj_sequence(&BitSequence::from_u64(31, 0x33BB_BBBA))
-                    .is_ok()
-                && interface
-                    .swj_sequence(&BitSequence::from_u64(8, 0xFF))
-                    .is_ok()
-                && interface
-                    .swj_sequence(&BitSequence::from_u64(64, 0x8685_2D95_6209_F392))
-                    .is_ok()
-                && interface
-                    .swj_sequence(&BitSequence::from_u64(64, 0x19BC_0EA2_E3DD_AFE9))
-                    .is_ok()
-                && interface
-                    .swj_sequence(&BitSequence::from_u64(12, 0x1A0))
-                    .is_ok()
-                && interface
-                    .swj_sequence(&BitSequence::from_u64(51, 0x0007_FFFF_FFFF_FFFF))
-                    .is_ok()
-                && interface
-                    .swj_sequence(&BitSequence::from_u64(3, 0x00))
-                    .is_ok();
+            let ok = dormant_to_swd_sequence(interface).is_ok();
             if ok {
                 match interface.raw_read_register(
                     Port::Dp,

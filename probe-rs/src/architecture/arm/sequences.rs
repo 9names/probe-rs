@@ -549,19 +549,6 @@ pub trait ArmDebugSequence: Send + Sync + Debug {
         // the SWD version 2 sequence.
         let mut has_dormant = matches!(dp, DpAddress::Multidrop(_));
 
-        fn alert_sequence(interface: &mut dyn DebugPortWire) -> Result<(), ArmError> {
-            tracing::trace!("Sending Selection Alert sequence");
-
-            // Ensure target is not in the middle of detecting a selection alert
-            interface.swj_sequence(&BitSequence::from_u64(8, 0xFF))?;
-
-            let mut alert = BitSequence::from_u64(64, 0x86852D956209F392);
-            alert.extend(&BitSequence::from_u64(64, 0x19BC0EA2E3DDAFE9));
-            interface.swj_sequence(&alert)?;
-
-            Ok(())
-        }
-
         // TODO: Use atomic block
 
         let mut result = Ok(());
@@ -578,8 +565,7 @@ pub trait ArmDebugSequence: Send + Sync + Debug {
                         tracing::debug!("Select Dormant State (from SWD)");
                         interface.swj_sequence(&BitSequence::from_u64(16, 0xE3BC))?;
 
-                        // Send alert sequence
-                        alert_sequence(interface)?;
+                        selection_alert_sequence(interface)?;
 
                         // 4 cycles SWDIO/TMS LOW + 8-Bit JTAG Activation Code (0x0A)
                         interface.swj_sequence(&BitSequence::from_u64(12, 0x0A0))?;
@@ -599,15 +585,7 @@ pub trait ArmDebugSequence: Send + Sync + Debug {
                 }
                 Some(WireProtocol::Swd) => {
                     if has_dormant {
-                        // Select Dormant State (from JTAG)
-                        tracing::debug!("SelectV1 Dormant State (from JTAG)");
-                        interface.swj_sequence(&BitSequence::from_u64(31, 0x33BBBBBA))?;
-
-                        // Leave dormant state
-                        alert_sequence(interface)?;
-
-                        // 4 cycles SWDIO/TMS LOW + 8-Bit SWD Activation Code (0x1A)
-                        interface.swj_sequence(&BitSequence::from_u64(12, 0x1A0))?;
+                        dormant_to_swd_activate(interface)?;
                     } else {
                         // Execute SWJ-DP Switch Sequence JTAG to SWD (0xE79E).
                         // Change if SWJ-DP uses deprecated switch code (0xEDB6).
@@ -1283,6 +1261,38 @@ pub trait DebugEraseSequence: Send + Sync {
     fn erase_all(&self, _interface: &mut dyn ArmDebugInterface) -> Result<(), ArmError> {
         Err(ArmError::NotImplemented("erase_all"))
     }
+}
+
+/// 8-bit preamble and 128-bit selection alert (ARM ADI §B4.3.4).
+pub(crate) fn selection_alert_sequence(interface: &mut dyn DebugPortWire) -> Result<(), ArmError> {
+    tracing::trace!("Sending Selection Alert sequence");
+
+    // Ensure target is not in the middle of detecting a selection alert
+    interface.swj_sequence(&BitSequence::from_u64(8, 0xFF))?;
+
+    let mut alert = BitSequence::from_u64(64, 0x86852D956209F392);
+    alert.extend(&BitSequence::from_u64(64, 0x19BC0EA2E3DDAFE9));
+    interface.swj_sequence(&alert)?;
+
+    Ok(())
+}
+
+/// Leave dormant state and activate SWD (after an SWD line reset if required).
+pub(crate) fn dormant_to_swd_activate(interface: &mut dyn DebugPortWire) -> Result<(), ArmError> {
+    tracing::debug!("SelectV1 Dormant State (from JTAG)");
+    interface.swj_sequence(&BitSequence::from_u64(31, 0x33BBBBBA))?;
+    selection_alert_sequence(interface)?;
+    // 4 cycles SWDIO/TMS LOW + 8-Bit SWD Activation Code (0x1A)
+    interface.swj_sequence(&BitSequence::from_u64(12, 0x1A0))?;
+    Ok(())
+}
+
+/// Full DORMANT-to-SWD wire sequence (ARM ADI §B4.3.4).
+pub(crate) fn dormant_to_swd_sequence(interface: &mut dyn DebugPortWire) -> Result<(), ArmError> {
+    swd_line_reset(interface, 0)?;
+    dormant_to_swd_activate(interface)?;
+    swd_line_reset(interface, 3)?;
+    Ok(())
 }
 
 /// Perform a SWD line reset (SWDIO high for 50 clock cycles)
